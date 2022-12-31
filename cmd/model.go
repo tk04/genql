@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -17,7 +18,12 @@ var modelCmd = &cobra.Command{
 	Long:  "Generate a Prisma model that is appended to the end of the schema.prisma file.\n\n Usage: model [model name] [list name:type:default_value].\n Example: genql model Test name:string id:id:ai isAdmin:bool:false",
 	Args:  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		oto, _ := cmd.Flags().GetString("OneToOne")
+		otm, _ := cmd.Flags().GetString("OneToMany")
+		mto, _ := cmd.Flags().GetString("ManyToOne")
+		fmt.Println("oto: ", oto, " -- otm: ", otm, "-- mto: ", mto)
 
+		// launch goroutine to handle building relationships while the button code runs, use waitGroup to sync threads, communicate w/ channels
 		modelName := args[0]
 		mappedTypes := mapType(args[1:])
 		fmt.Println(mappedTypes)
@@ -55,10 +61,11 @@ func isUpper(char byte) bool {
 }
 func mapType(values []string) map[string]string {
 	mappedAtrrib := map[string]string{
-		"ai":    "@default(autoincrement())",
-		"uuid":  "String\t\t @id @default(uuid())",
-		"true":  "@default(true)",
-		"false": "@default(false)",
+		"ai":     "@default(autoincrement())",
+		"uuid":   "String\t\t @id @default(uuid())",
+		"true":   "@default(true)",
+		"false":  "@default(false)",
+		"unique": "@unique",
 	}
 
 	mappedTypes := map[string]string{
@@ -104,4 +111,78 @@ func mapType(values []string) map[string]string {
 		mappedValues[values[0]] = mappedTypes[values[1]] + " " + attribute
 	}
 	return mappedValues
+}
+
+func BuildOneToOne() {
+	addField("testField\tString", "User")
+}
+
+func getIdType(modelName string) string {
+
+	f, err := os.ReadFile(GetSchemaPath())
+	if err != nil {
+		fmt.Println("file not found. Create a prisma.schema file @ the following path: ", GetSchemaPath())
+		os.Exit(1)
+	}
+	index := bytes.Index(f, []byte(modelName))
+	fmt.Println(index)
+
+	index2 := bytes.Index(f[index:], []byte("@id"))
+	fmt.Println(index2)
+	var IdType string
+	for i := index2 + index; i >= 0; i-- {
+		if isUpper(f[i]) || (f[i] >= 97 && f[i] <= 122) {
+			IdType = string(f[i]) + IdType
+		} else if len(IdType) > 0 {
+			break
+		}
+	}
+	return IdType
+}
+
+func addField(field string, modelName string) {
+	var newBytes []byte
+
+	f, err := os.OpenFile(GetSchemaPath(), os.O_RDWR, 0644)
+	defer f.Close()
+	if err != nil {
+		fmt.Println("file not found. Create a schema.prisma file @ the following path: ", GetSchemaPath())
+		os.Exit(1)
+	}
+	buffer := make([]byte, 1)
+	i, err := f.Read(buffer)
+	offset := i
+	currStr := ""
+	for err != io.EOF {
+		newBytes = append(newBytes, buffer...)
+		if isUpper(buffer[0]) || (buffer[0] >= 97 && buffer[0] <= 122) {
+			currStr += string(buffer)
+		} else {
+			if currStr == modelName {
+				break
+			}
+			currStr = ""
+		}
+		i, err = f.Read(buffer)
+		offset += i
+	}
+	if err == io.EOF {
+		fmt.Printf("Model name %s does not exist in schema.prisma, make sure to create the model first", modelName)
+		os.Exit(1)
+	}
+	for err != io.EOF {
+		i, err = f.Read(buffer)
+		if buffer[0] == 125 {
+			newBytes = append(newBytes, []byte("\t"+field+"\n")...)
+			break
+		}
+		newBytes = append(newBytes, buffer...)
+	}
+	for err != io.EOF {
+		newBytes = append(newBytes, buffer...)
+		i, err = f.Read(buffer)
+	}
+	f.Truncate(0)
+	f.Seek(0, 0)
+	f.Write(newBytes)
 }

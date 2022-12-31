@@ -16,6 +16,13 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	rootCmd.AddCommand(testCmd)
 	rootCmd.AddCommand(modelCmd)
+	var OTMRelation string // one to many relationship
+	var OTORelation string // one to one relationship
+	var MTORelation string // many to one relationship
+	modelCmd.Flags().StringVarP(&OTMRelation, "OneToMany", "r", "", "Define a one-to-many relationship between two models")
+	modelCmd.Flags().StringVarP(&OTORelation, "OneToOne", "1", "", "Define a one-to-one relationship between two models")
+	modelCmd.Flags().StringVarP(&MTORelation, "ManyToOne", "m", "", "Define a many-to-one relationship between two models")
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
