@@ -105,6 +105,9 @@ func (p *Model) String() string {
 	return stringVal
 }
 
+func (p *Model) AddField(field Field) {
+	p.fields = append(p.fields, field)
+}
 func (p *Field) String() string {
 	var prismaType string
 	if p.Typename == NPType {
@@ -192,18 +195,15 @@ func ParseModel(modelName string, values []string) Model {
 	return parsedM
 }
 
-func GetIdType(modelName string) string {
-
+func GetIdType(modelName string) PrismaType {
 	f, err := os.ReadFile(GetSchemaPath())
 	if err != nil {
 		fmt.Println("file not found. Create a prisma.schema file @ the following path: ", GetSchemaPath())
 		os.Exit(1)
 	}
 	index := bytes.Index(f, []byte(modelName))
-	fmt.Println(index)
 
 	index2 := bytes.Index(f[index:], []byte("@id"))
-	fmt.Println(index2)
 	var IdType string
 	for i := index2 + index; i >= 0; i-- {
 		if (f[i] >= 65 && f[i] <= 90) || (f[i] >= 97 && f[i] <= 122) {
@@ -212,7 +212,13 @@ func GetIdType(modelName string) string {
 			break
 		}
 	}
-	return IdType
+
+	typename, ok := MAPPED_TYPES[strings.ToLower(IdType)]
+	if !ok {
+		fmt.Printf("unknown Id type (%s)\n", IdType)
+		os.Exit(1)
+	}
+	return typename
 }
 
 func AddField(field Field, modelName string) {
@@ -242,7 +248,7 @@ func AddField(field Field, modelName string) {
 		offset += i
 	}
 	if err == io.EOF {
-		fmt.Printf("Model name %s does not exist in schema.prisma, make sure to create the model first", modelName)
+		fmt.Printf("Model name %s does not exist in schema.prisma, make sure to create the model first\n", modelName)
 		os.Exit(1)
 	}
 	for err != io.EOF {

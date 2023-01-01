@@ -21,7 +21,7 @@ func Execute() {
 	var MTORelation string // many to one relationship
 	modelCmd.Flags().StringVarP(&OTMRelation, "OneToMany", "r", "", "Define a one-to-many relationship between two models")
 	modelCmd.Flags().StringVarP(&OTORelation, "OneToOne", "1", "", "Define a one-to-one relationship between two models")
-	modelCmd.Flags().StringVarP(&MTORelation, "ManyToOne", "m", "", "Define a many-to-one relationship between two models")
+	modelCmd.Flags().StringVarP(&MTORelation, "ManyToMany", "m", "", "Define a many-to-one relationship between two models")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
