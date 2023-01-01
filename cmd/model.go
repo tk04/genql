@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"genql/prismaUtil"
 	"github.com/spf13/cobra"
 )
 
@@ -23,18 +24,10 @@ var modelCmd = &cobra.Command{
 		mto, _ := cmd.Flags().GetString("ManyToOne")
 		fmt.Println("oto: ", oto, " -- otm: ", otm, "-- mto: ", mto)
 
-		// launch goroutine to handle building relationships while the button code runs, use waitGroup to sync threads, communicate w/ channels
-		modelName := args[0]
-		mappedTypes := mapType(args[1:])
-		fmt.Println(mappedTypes)
-		modelString := "\nmodel " + modelName + " {\n"
-		for k, v := range mappedTypes {
-			modelString += "\t" + k + "\t\t\t\t" + v + "\n"
-		}
-		modelString += "}"
+		prismaModel := prismaUtil.ParseModel(args[0], args[1:])
 		f, err := os.OpenFile(GetSchemaPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		defer f.Close()
-		f.WriteString(modelString)
+		f.WriteString(prismaModel.String())
 		if err != nil {
 			fmt.Println(err)
 		}

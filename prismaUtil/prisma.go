@@ -77,10 +77,11 @@ type Model struct {
 }
 
 func (p *Model) String() string {
-	stringVal := "model " + p.name + " {\n"
+	stringVal := "\nmodel " + p.name + " {\n"
 	for _, field := range p.fields {
-		stringVal += field.String() + "\n"
+		stringVal += "\t" + field.String() + "\n"
 	}
+	stringVal += "}"
 
 	return stringVal
 }
@@ -134,15 +135,16 @@ func ParseField(str string) Field { // string of the form typename:type:default_
 	typename, ok := MAPPED_TYPES[splitType[0]]
 	if !ok {
 		// check if its an id type
-		if values[2] == "id" {
+		if values[1] == "id" {
 			parsedT.typename = parseID(values)
 			parsedT.attribute += "@id\t"
 		} else {
 			fmt.Printf("invalid type entered (%s), please enter a valid type\n", splitType[0])
 			os.Exit(1)
 		}
+	} else {
+		parsedT.typename = typename
 	}
-	parsedT.typename = typename
 
 	// parse attributes
 	if len(values) == 3 {
