@@ -91,13 +91,13 @@ type Field struct {
 }
 
 type Model struct {
-	name   string
-	fields []Field
+	Name   string
+	Fields []Field
 }
 
 func (p *Model) String() string {
-	stringVal := "\nmodel " + p.name + " {\n"
-	for _, field := range p.fields {
+	stringVal := "\nmodel " + p.Name + " {\n"
+	for _, field := range p.Fields {
 		stringVal += "\t" + field.String() + "\n"
 	}
 	stringVal += "}"
@@ -106,7 +106,7 @@ func (p *Model) String() string {
 }
 
 func (p *Model) AddField(field Field) {
-	p.fields = append(p.fields, field)
+	p.Fields = append(p.Fields, field)
 }
 func (p *Field) String() string {
 	var prismaType string
@@ -188,9 +188,9 @@ func ParseField(str string) Field { // string of the form typename:type:default_
 }
 
 func ParseModel(modelName string, values []string) Model {
-	parsedM := Model{name: modelName, fields: []Field{}}
+	parsedM := Model{Name: modelName, Fields: []Field{}}
 	for _, val := range values {
-		parsedM.fields = append(parsedM.fields, ParseField(val))
+		parsedM.Fields = append(parsedM.Fields, ParseField(val))
 	}
 	return parsedM
 }
@@ -266,4 +266,75 @@ func AddField(field Field, modelName string) {
 	f.Truncate(0)
 	f.Seek(0, 0)
 	f.Write(newBytes)
+}
+
+func GetModel(modelName string) Model {
+	f, err := os.ReadFile(GetSchemaPath())
+	if err != nil {
+		fmt.Printf("schema.prisma does not exist in %s", GetSchemaPath())
+		os.Exit(1)
+	}
+	model := Model{Name: modelName, Fields: []Field{}}
+	index := bytes.Index(f, []byte(modelName))
+	index2 := bytes.Index(f[index:], []byte("\n"))
+
+	// var char byte
+	element := ""
+	for _, b := range f[index+index2:] {
+
+		if b == '}' {
+			break
+		}
+		if b != 10 && b != 32 {
+			element += string(b)
+		}
+		if b == ' ' && len(element) > 0 && element[len(element)-1] != '-' {
+			element += "-"
+		}
+		if b == 10 {
+			if len(element) > 0 {
+				model.Fields = append(model.Fields, parseField2(element))
+			}
+			element = ""
+
+		}
+	}
+
+	return model
+}
+
+// parse field seperated by dashed value
+func parseField2(dValue string) Field {
+	values := strings.Split(dValue, "-")
+	if len(values) < 2 {
+		fmt.Println("error parsing values")
+		os.Exit(1)
+	}
+	field := Field{Name: values[0]}
+	splitType := strings.Split(values[1], "[]")
+	if len(splitType) == 2 {
+		field.IsArray = true
+	}
+	splitType = strings.Split(strings.Join(splitType, ""), "?")
+	if len(splitType) == 2 {
+		field.IsOptional = true
+	}
+
+	lowT := strings.ToLower(splitType[0])
+	if t, ok := MAPPED_TYPES[lowT]; ok {
+		field.Typename = t
+	} else {
+		field.Typename = NPType
+		field.NPType = splitType[0]
+	}
+
+	if len(values) >= 3 {
+		attrib := ""
+		for _, att := range values[3:] {
+			attrib += att + " "
+		}
+		field.Attribute = attrib
+	}
+
+	return field
 }

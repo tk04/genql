@@ -16,6 +16,8 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	rootCmd.AddCommand(testCmd)
 	rootCmd.AddCommand(modelCmd)
+	rootCmd.AddCommand(resolversCmd)
+
 	var OTMRelation string // one to many relationship
 	var OTORelation string // one to one relationship
 	var MTORelation string // many to one relationship
