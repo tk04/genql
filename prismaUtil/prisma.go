@@ -127,7 +127,7 @@ func (p *Field) String() string {
 		prismaType += "?"
 	}
 
-	return p.Name + "\t\t" + prismaType + "\t" + p.Attribute
+	return p.Name + " " + prismaType + " " + p.Attribute
 }
 
 func parseID(values []string) PrismaType {
