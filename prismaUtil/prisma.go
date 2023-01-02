@@ -334,7 +334,7 @@ func parseField2(dValue string) Field {
 
 	if len(values) >= 3 {
 		attrib := ""
-		for _, att := range values[3:] {
+		for _, att := range values[2:] {
 			attrib += att + " "
 		}
 		field.Attribute = attrib
