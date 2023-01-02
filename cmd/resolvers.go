@@ -15,6 +15,22 @@ var resolversCmd = &cobra.Command{
 	Long:  "Generate CRUD GraphQL resolvers for a Prisma Model.\n\n Usage: genql resolvers [model name].",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		arg, _ := cmd.Flags().GetStringArray("Except")
+
+		funcs := map[string]struct{}{
+			"get":    struct{}{},
+			"create": struct{}{},
+			"update": struct{}{},
+			"delete": struct{}{},
+		}
+		for _, val := range arg {
+			delete(funcs, val)
+		}
+		include := []string{}
+		for k := range funcs {
+			include = append(include, k)
+		}
+
 		resolverPath := "./src/resolvers/" + args[0]
 		err := os.MkdirAll(resolverPath, os.ModePerm)
 		if err != nil {
@@ -23,6 +39,7 @@ var resolversCmd = &cobra.Command{
 		}
 
 		model := prismaUtil.GetModel(args[0])
-		resolvers.CreateResolver(model)
+		resolver := resolvers.Resolver{Model: model, Functions: include}
+		resolver.CreateFiles()
 	},
 }

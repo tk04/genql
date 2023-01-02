@@ -25,6 +25,9 @@ func Execute() {
 	modelCmd.Flags().StringVarP(&OTORelation, "OneToOne", "1", "", "Define a one-to-one relationship between two models")
 	modelCmd.Flags().StringVarP(&MTORelation, "ManyToMany", "m", "", "Define a many-to-one relationship between two models")
 
+	var Exceptions []string
+	resolversCmd.Flags().StringArrayVarP(&Exceptions, "Except", "e", []string{}, "Define operations not to be included in a given resolver")
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
