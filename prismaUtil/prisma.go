@@ -276,6 +276,10 @@ func GetModel(modelName string) Model {
 	}
 	model := Model{Name: modelName, Fields: []Field{}}
 	index := bytes.Index(f, []byte(modelName))
+	if index == -1 {
+		fmt.Printf("Model (%s) not found in prisma.schema\n", modelName)
+		os.Exit(1)
+	}
 	index2 := bytes.Index(f[index:], []byte("\n"))
 
 	// var char byte
