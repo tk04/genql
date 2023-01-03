@@ -131,7 +131,7 @@ func (p *Field) String() string {
 }
 
 func parseID(values []string) PrismaType {
-	if values[1] == "id" {
+	if values[1] == "id" && len(values) == 3 {
 		if values[2] == "uuid" {
 			return StringType
 		} else if values[2] == "ai" {
@@ -141,7 +141,9 @@ func parseID(values []string) PrismaType {
 		os.Exit(1)
 	}
 
-	panic("invalid id type entered")
+	fmt.Printf("invalid id type entered (%s)\n", strings.Join(values, ":"))
+	os.Exit(1)
+	panic("")
 }
 
 func ParseField(str string) Field { // string of the form typename:type:default_value
@@ -188,6 +190,11 @@ func ParseField(str string) Field { // string of the form typename:type:default_
 }
 
 func ParseModel(modelName string, values []string) Model {
+	exists := findModel(modelName)
+	if exists {
+		fmt.Printf("Model (%s) already exists\n", modelName)
+		os.Exit(1)
+	}
 	parsedM := Model{Name: modelName, Fields: []Field{}}
 	for _, val := range values {
 		parsedM.Fields = append(parsedM.Fields, ParseField(val))
@@ -268,6 +275,18 @@ func AddField(field Field, modelName string) {
 	f.Write(newBytes)
 }
 
+func findModel(modelName string) bool {
+	f, err := os.ReadFile(GetSchemaPath())
+	if err != nil {
+		fmt.Printf("schema.prisma does not exist in %s", GetSchemaPath())
+		os.Exit(1)
+	}
+	index := bytes.Index(f, []byte("model "+modelName))
+	if index == -1 {
+		return false
+	}
+	return true
+}
 func GetModel(modelName string) Model {
 	f, err := os.ReadFile(GetSchemaPath())
 	if err != nil {

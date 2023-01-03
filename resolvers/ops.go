@@ -90,15 +90,16 @@ func deleteFunc(modelName string, idType string) string {
 
 func FornatTS(lines []string) string {
 	ts := ""
+	val := struct{}{}
 	seps := map[byte]struct{}{
-		'{': struct{}{},
-		'(': struct{}{},
-		'[': struct{}{},
+		'{': val,
+		'(': val,
+		'[': val,
 	}
 	ends := map[byte]struct{}{
-		'}': struct{}{},
-		')': struct{}{},
-		']': struct{}{},
+		'}': val,
+		')': val,
+		']': val,
 	}
 
 	tabs := []string{}

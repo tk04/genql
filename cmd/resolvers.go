@@ -17,11 +17,12 @@ var resolversCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		arg, _ := cmd.Flags().GetStringArray("Except")
 
+		val := struct{}{}
 		funcs := map[string]struct{}{
-			"get":    struct{}{},
-			"create": struct{}{},
-			"update": struct{}{},
-			"delete": struct{}{},
+			"get":    val,
+			"create": val,
+			"update": val,
+			"delete": val,
 		}
 		for _, val := range arg {
 			delete(funcs, val)
