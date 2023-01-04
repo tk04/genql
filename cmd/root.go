@@ -14,7 +14,6 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	rootCmd.AddCommand(testCmd)
 	rootCmd.AddCommand(modelCmd)
 	rootCmd.AddCommand(resolversCmd)
 
