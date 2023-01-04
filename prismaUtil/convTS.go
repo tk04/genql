@@ -20,23 +20,27 @@ var MAPPED_TS = map[PrismaType]string{
 func (m Model) toTS(optional bool) string {
 	tsType := ""
 	for _, field := range m.Fields {
-		tsType += "\t@Field()\n\t" + field.Name
+		// skip non-primative types
+		if field.Typename == NPType {
+			continue
+		}
 
-		if optional || field.IsOptional || strings.Index(field.Attribute, "@default") != -1 {
+		if optional && strings.Index(field.Attribute, "@id") != -1 { // id required for update operation
+			tsType += "\t@Field()\n\t" + field.Name
+		} else if optional || field.IsOptional || strings.Index(field.Attribute, "@default") != -1 {
+			tsType += "\t@Field({ nullable: true })\n\t" + field.Name
 			tsType += "?"
+		} else {
+			tsType += "\t@Field()\n\t" + field.Name
 		}
 		tsType += ": "
 
-		if field.Typename == NPType {
-			tsType += field.NPType
-		} else {
-			typename, ok := MAPPED_TS[field.Typename]
-			if !ok {
-				fmt.Println("invalid type encountered")
-				os.Exit(1)
-			}
-			tsType += typename
+		typename, ok := MAPPED_TS[field.Typename]
+		if !ok {
+			fmt.Println("invalid type encountered")
+			os.Exit(1)
 		}
+		tsType += typename
 
 		if field.IsArray {
 			tsType += "[]"

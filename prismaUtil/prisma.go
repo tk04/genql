@@ -148,6 +148,10 @@ func parseID(values []string) PrismaType {
 
 func ParseField(str string) Field { // string of the form typename:type:default_value
 	values := strings.Split(str, ":")
+	if len(values) < 2 || len(values) > 3 {
+		fmt.Printf("Invalid format enetered (%s)\n", strings.Join(values, ":"))
+		os.Exit(1)
+	}
 	parsedT := Field{Name: values[0], IsOptional: false, IsArray: false, Attribute: ""}
 	splitType := strings.Split(values[1], "[]")
 	if len(splitType) == 2 {
@@ -294,7 +298,7 @@ func GetModel(modelName string) Model {
 		os.Exit(1)
 	}
 	model := Model{Name: modelName, Fields: []Field{}}
-	index := bytes.Index(f, []byte(modelName))
+	index := bytes.Index(f, []byte("model "+modelName))
 	if index == -1 {
 		fmt.Printf("Model (%s) not found in prisma.schema\n", modelName)
 		os.Exit(1)
