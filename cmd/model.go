@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"genql/prismaUtil"
 	pluralize "github.com/gertd/go-pluralize"
 	"github.com/spf13/cobra"
+	"github.com/tk04/genql/prismaUtil"
 	"os"
 	"strings"
 )

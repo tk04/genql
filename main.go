@@ -1,7 +1,7 @@
 package main
 
 import (
-	"genql/cmd"
+	"github.com/tk04/genql/cmd"
 )
 
 func main() {

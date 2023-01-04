@@ -3,7 +3,7 @@ package resolvers
 import (
 	"errors"
 	"fmt"
-	"genql/prismaUtil"
+	"github.com/tk04/genql/prismaUtil"
 	"os"
 	"strings"
 )

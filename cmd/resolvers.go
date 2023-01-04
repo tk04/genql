@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"genql/prismaUtil"
-	"genql/resolvers"
+	"github.com/tk04/genql/prismaUtil"
+	"github.com/tk04/genql/resolvers"
 	"os"
 
 	"github.com/spf13/cobra"

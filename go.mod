@@ -1,4 +1,4 @@
-module genql
+module github.com/tk04/genql
 
 go 1.19
 
