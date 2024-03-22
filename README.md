@@ -6,8 +6,7 @@ Inspired by generators from <a href="https://hexdocs.pm/phoenix/Mix.Tasks.Phx.Ge
 Genql is installable via homebrew if you’re on Mac or Linux. To install, run the following two commands:
 
 ```
-$ brew tap tk04/genql
-$ brew install genql
+$ brew install tk04/tap/genql
 ```
 
 Before using genql, you must have Prisma set up on your project. After that, you can create a model by running:
